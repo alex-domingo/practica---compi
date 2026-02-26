@@ -1,221 +1,223 @@
-package com.example.decompi.compiler;
+     package com.example.decompi.compiler;
 
-import java_cup.runtime.*;
-import java.util.ArrayList;
-import java.util.List;
-import com.example.decompi.compiler.models.*;
+     import java_cup.runtime.*;
+     import java.util.ArrayList;
+     import java.util.List;
+     import com.example.decompi.compiler.models.*;
 
-parser code {:
-    public List<CompilationError> errors = new ArrayList<>();
-    public List<OperatorOccurrence> operatorReport = new ArrayList<>();
-    public List<ControlStructure> controlReport = new ArrayList<>();
+     parser code {:
+         public List<CompilationError> errors = new ArrayList<>();
+         public List<OperatorOccurrence> operatorReport = new ArrayList<>();
+         public List<ControlStructure> controlReport = new ArrayList<>();
 
-    public void syntax_error(Symbol s) {
-        String lexeme = s.value != null ? s.value.toString() : "desconocido";
-        errors.add(new CompilationError(lexeme, s.left, s.right, "Sintáctico", "Token inesperado"));
-    }
+         public void syntax_error(Symbol s) {
+             String lexeme = s.value != null ? s.value.toString() : "desconocido";
+             errors.add(new CompilationError(lexeme, s.left, s.right, "Sintáctico", "Token inesperado"));
+         }
 
-    public void addOperator(String op, int line, int col, String occurrence) {
-        operatorReport.add(new OperatorOccurrence(op, line, col, occurrence));
-    }
+         public void addOperator(String op, int line, int col, String occurrence) {
+             operatorReport.add(new OperatorOccurrence(op, line, col, occurrence));
+         }
 
-    public void addControl(String type, int line, String condition) {
-        controlReport.add(new ControlStructure(type, line, condition));
-    }
-:};
+         public void addControl(String type, int line, String condition) {
+             controlReport.add(new ControlStructure(type, line, condition));
+         }
+     :};
 
-/* Terminals */
-terminal VAR, SI, ENTONCES, FINSI, MIENTRAS, HACER, FINMIENTRAS, MOSTRAR, LEER, INICIO, FIN;
-terminal PLUS, MINUS, MULT, DIV, ASSIGN;
-terminal EQUALS, NOT_EQUALS, GREATER_EQUAL, LESS_EQUAL, GREATER, LESS;
-terminal AND, OR, NOT;
-terminal LPAREN, RPAREN, COMMA, PIPE, SEPARATOR;
-terminal CONF_DEFAULT, CONF_COLOR_TEXTO_SI, CONF_COLOR_SI, CONF_FIGURA_SI, CONF_LETRA_SI, CONF_LETRA_SIZE_SI;
-terminal CONF_COLOR_TEXTO_MIENTRAS, CONF_COLOR_MIENTRAS, CONF_FIGURA_MIENTRAS, CONF_LETRA_MIENTRAS, CONF_LETRA_SIZE_MIENTRAS;
-terminal CONF_COLOR_TEXTO_BLOQUE, CONF_COLOR_BLOQUE, CONF_FIGURA_BLOQUE, CONF_LETRA_BLOQUE, CONF_LETRA_SIZE_BLOQUE;
-terminal FIG_ELIPSE, FIG_CIRCULO, FIG_PARALELOGRAMO, FIG_RECTANGULO, FIG_ROMBO, FIG_RECTANGULO_REDONDEADO;
-terminal FONT_ARIAL, FONT_TIMES_NEW_ROMAN, FONT_COMIC_SANS, FONT_VERDANA;
-terminal Double NUMBER;
-terminal String HEX_COLOR;
-terminal String STRING;
-terminal String ID;
+     /* Terminals */
+     terminal VAR, SI, ENTONCES, FINSI, MIENTRAS, HACER, FINMIENTRAS, MOSTRAR, LEER, INICIO, FIN;
+     terminal PLUS, MINUS, MULT, DIV, ASSIGN;
+     terminal EQUALS, NOT_EQUALS, GREATER_EQUAL, LESS_EQUAL, GREATER, LESS;
+     terminal AND, OR, NOT;
+     terminal LPAREN, RPAREN, COMMA, PIPE, SEPARATOR;
+     terminal CONF_DEFAULT, CONF_COLOR_TEXTO_SI, CONF_COLOR_SI, CONF_FIGURA_SI, CONF_LETRA_SI, CONF_LETRA_SIZE_SI;
+     terminal CONF_COLOR_TEXTO_MIENTRAS, CONF_COLOR_MIENTRAS, CONF_FIGURA_MIENTRAS, CONF_LETRA_MIENTRAS, CONF_LETRA_SIZE_MIENTRAS;
+     terminal CONF_COLOR_TEXTO_BLOQUE, CONF_COLOR_BLOQUE, CONF_FIGURA_BLOQUE, CONF_LETRA_BLOQUE, CONF_LETRA_SIZE_BLOQUE;
+     terminal FIG_ELIPSE, FIG_CIRCULO, FIG_PARALELOGRAMO, FIG_RECTANGULO, FIG_ROMBO, FIG_RECTANGULO_REDONDEADO;
+     terminal FONT_ARIAL, FONT_TIMES_NEW_ROMAN, FONT_COMIC_SANS, FONT_VERDANA;
+     terminal Double NUMBER;
+     terminal String HEX_COLOR;
+     terminal String STRING;
+     terminal String ID;
 
-/* Non-terminals */
-non terminal Program program;
-non terminal List<Instruction> full_instruction_list;
-non terminal List<Instruction> simple_instruction_list;
-non terminal Instruction instruction;
-non terminal Instruction simple_instruction;
-non terminal Expression expression;
-non terminal Condition condition;
-non terminal List<ConfigInstruction> config_list;
-non terminal ConfigInstruction config_instruction;
-non terminal ColorValue color_value;
-non terminal String figure_name;
-non terminal String font_name;
+     /* Non-terminals */
+     non terminal Program program;
+     non terminal List<Instruction> full_instruction_list;
+     non terminal List<Instruction> simple_instruction_list;
+     non terminal Instruction instruction;
+     non terminal Instruction simple_instruction;
+     non terminal Expression expression;
+     non terminal Condition condition;
+     non terminal List<ConfigInstruction> config_list;
+     non terminal ConfigInstruction config_instruction;
+     non terminal ColorValue color_value;
+     non terminal String figure_name;
+     non terminal String font_name;
 
-/* Precedence */
-precedence left OR;
-precedence left AND;
-precedence right NOT;
-precedence left EQUALS, NOT_EQUALS, GREATER, LESS, GREATER_EQUAL, LESS_EQUAL;
-precedence left PLUS, MINUS;
-precedence left MULT, DIV;
+     /* Precedence */
+     precedence left OR;
+     precedence left AND;
+     precedence right NOT;
+     precedence left EQUALS, NOT_EQUALS, GREATER, LESS, GREATER_EQUAL, LESS_EQUAL;
+     precedence left PLUS, MINUS;
+     precedence left MULT, DIV;
 
-/* Grammar */
+     /* Grammar */
 
-start with program;
+     start with program;
 
-program ::= INICIO full_instruction_list:il FIN SEPARATOR config_list:cl
-            {: RESULT = new Program(il, cl); :}
-          | INICIO FIN SEPARATOR config_list:cl
-            {: RESULT = new Program(new ArrayList<Instruction>(), cl); :}
-          ;
+     program ::= INICIO full_instruction_list:il FIN SEPARATOR config_list:cl
+                 {: RESULT = new Program(il, cl); :}
+               | INICIO FIN SEPARATOR config_list:cl
+                 {: RESULT = new Program(new ArrayList<Instruction>(), cl); :}
+               ;
 
-full_instruction_list ::= full_instruction_list:list instruction:i
-                          {: list.add(i); RESULT = list; :}
-                        | instruction:i
-                          {: List<Instruction> list = new ArrayList<>(); list.add(i); RESULT = list; :}
-                        ;
+     full_instruction_list ::= full_instruction_list:list instruction:i
+                               {: list.add(i); RESULT = list; :}
+                             | instruction:i
+                               {: List<Instruction> list = new ArrayList<>(); list.add(i); RESULT = list; :}
+                             ;
 
-instruction ::= simple_instruction:i
-                {: RESULT = i; :}
-              | SI LPAREN condition:c RPAREN ENTONCES simple_instruction_list:il FINSI
-                {:
-                   parser.addControl("SI", cleft, "condición");
-                   RESULT = new IfInstruction(c, il);
-                :}
-              | MIENTRAS LPAREN condition:c RPAREN HACER simple_instruction_list:il FINMIENTRAS
-                {:
-                   parser.addControl("MIENTRAS", cleft, "condición");
-                   RESULT = new WhileInstruction(c, il);
-                :}
-              ;
+     instruction ::= simple_instruction:i
+                     {: RESULT = i; :}
+                   | SI LPAREN condition:c RPAREN ENTONCES simple_instruction_list:il FINSI
+                     {:
+                        parser.addControl("SI", cleft, "condición");
+                        RESULT = new IfInstruction(c, il);
+                     :}
+                   | MIENTRAS LPAREN condition:c RPAREN HACER simple_instruction_list:il FINMIENTRAS
+                     {:
+                        parser.addControl("MIENTRAS", cleft, "condición");
+                        RESULT = new WhileInstruction(c, il);
+                     :}
+                   ;
 
-simple_instruction_list ::= simple_instruction_list:list simple_instruction:i
-                            {: list.add(i); RESULT = list; :}
-                          | simple_instruction:i
-                            {: List<Instruction> list = new ArrayList<>(); list.add(i); RESULT = list; :}
+     simple_instruction_list ::= simple_instruction_list:list simple_instruction:i
+                                 {: list.add(i); RESULT = list; :}
+                               | simple_instruction:i
+                                 {: List<Instruction> list = new ArrayList<>(); list.add(i); RESULT = list; :}
+                               ;
+
+     simple_instruction ::= VAR ID:id ASSIGN expression:e
+                            {: RESULT = new VarDeclaration(id, e); :}
+                          | VAR ID:id
+                            {: RESULT = new VarDeclaration(id, null); :}
+                          | ID:id ASSIGN expression:e
+                            {: RESULT = new Assignment(id, e); :}
+                          | MOSTRAR STRING:s
+                            {: RESULT = new ShowInstruction(s); :}
+                          | MOSTRAR ID:id
+                            {: RESULT = new ShowInstruction(id); :}
+                          | LEER ID:id
+                            {: RESULT = new ReadInstruction(id); :}
                           ;
 
-simple_instruction ::= VAR ID:id ASSIGN expression:e
-                       {: RESULT = new VarDeclaration(id, e); :}
-                     | VAR ID:id
-                       {: RESULT = new VarDeclaration(id, null); :}
-                     | ID:id ASSIGN expression:e
-                       {: RESULT = new Assignment(id, e); :}
-                     | MOSTRAR STRING:s
-                       {: RESULT = new ShowInstruction(s); :}
-                     | LEER ID:id
-                       {: RESULT = new ReadInstruction(id); :}
-                     ;
+     expression ::= NUMBER:n
+                    {: RESULT = new NumberLiteral(n); :}
+                  | ID:id
+                    {: RESULT = new Identifier(id); :}
+                  | expression:l PLUS:op expression:r
+                    {:
+                       parser.addOperator("Suma", opleft, opright, l.toString() + " + " + r.toString());
+                       RESULT = new BinaryExpression(l, "+", r);
+                    :}
+                  | expression:l MINUS:op expression:r
+                    {:
+                       parser.addOperator("Resta", opleft, opright, l.toString() + " - " + r.toString());
+                       RESULT = new BinaryExpression(l, "-", r);
+                    :}
+                  | expression:l MULT:op expression:r
+                    {:
+                       parser.addOperator("Multiplicación", opleft, opright, l.toString() + " * " + r.toString());
+                       RESULT = new BinaryExpression(l, "*", r);
+                    :}
+                  | expression:l DIV:op expression:r
+                    {:
+                       parser.addOperator("División", opleft, opright, l.toString() + " / " + r.toString());
+                       RESULT = new BinaryExpression(l, "/", r);
+                    :}
+                  | LPAREN expression:e RPAREN
+                    {: RESULT = e; :}
+                  ;
 
-expression ::= NUMBER:n
-               {: RESULT = new NumberLiteral(n); :}
-             | ID:id
-               {: RESULT = new Identifier(id); :}
-             | expression:l PLUS:op expression:r
-               {:
-                  parser.addOperator("Suma", opleft, opright, l.toString() + " + " + r.toString());
-                  RESULT = new BinaryExpression(l, "+", r);
-               :}
-             | expression:l MINUS:op expression:r
-               {:
-                  parser.addOperator("Resta", opleft, opright, l.toString() + " - " + r.toString());
-                  RESULT = new BinaryExpression(l, "-", r);
-               :}
-             | expression:l MULT:op expression:r
-               {:
-                  parser.addOperator("Multiplicación", opleft, opright, l.toString() + " * " + r.toString());
-                  RESULT = new BinaryExpression(l, "*", r);
-               :}
-             | expression:l DIV:op expression:r
-               {:
-                  parser.addOperator("División", opleft, opright, l.toString() + " / " + r.toString());
-                  RESULT = new BinaryExpression(l, "/", r);
-               :}
-             | LPAREN expression:e RPAREN
-               {: RESULT = e; :}
-             ;
+     condition ::= expression:l EQUALS expression:r
+                   {: RESULT = new RelationalCondition(l, "==", r); :}
+                 | expression:l NOT_EQUALS expression:r
+                   {: RESULT = new RelationalCondition(l, "!=", r); :}
+                 | expression:l GREATER expression:r
+                   {: RESULT = new RelationalCondition(l, ">", r); :}
+                 | expression:l LESS expression:r
+                   {: RESULT = new RelationalCondition(l, "<", r); :}
+                 | expression:l GREATER_EQUAL expression:r
+                   {: RESULT = new RelationalCondition(l, ">=", r); :}
+                 | expression:l LESS_EQUAL expression:r
+                   {: RESULT = new RelationalCondition(l, "<=", r); :}
+                 | condition:l AND condition:r
+                   {: RESULT = new LogicalCondition(l, "&&", r); :}
+                 | condition:l OR condition:r
+                   {: RESULT = new LogicalCondition(l, "||", r); :}
+                 | NOT condition:c
+                   {: RESULT = new NotCondition(c); :}
+                 | LPAREN condition:c RPAREN
+                   {: RESULT = c; :}
+                 ;
 
-condition ::= expression:l EQUALS expression:r
-              {: RESULT = new RelationalCondition(l, "==", r); :}
-            | expression:l NOT_EQUALS expression:r
-              {: RESULT = new RelationalCondition(l, "!=", r); :}
-            | expression:l GREATER expression:r
-              {: RESULT = new RelationalCondition(l, ">", r); :}
-            | expression:l LESS expression:r
-              {: RESULT = new RelationalCondition(l, "<", r); :}
-            | expression:l GREATER_EQUAL expression:r
-              {: RESULT = new RelationalCondition(l, ">=", r); :}
-            | expression:l LESS_EQUAL expression:r
-              {: RESULT = new RelationalCondition(l, "<=", r); :}
-            | condition:l AND condition:r
-              {: RESULT = new LogicalCondition(l, "&&", r); :}
-            | condition:l OR condition:r
-              {: RESULT = new LogicalCondition(l, "||", r); :}
-            | NOT condition:c
-              {: RESULT = new NotCondition(c); :}
-            | LPAREN condition:c RPAREN
-              {: RESULT = c; :}
-            ;
+     config_list ::= config_list:list config_instruction:ci
+                     {: list.add(ci); RESULT = list; :}
+                   | config_instruction:ci
+                     {: List<ConfigInstruction> list = new ArrayList<>(); list.add(ci); RESULT = list; :}
+                   ;
 
-config_list ::= config_list:list config_instruction:ci
-                {: list.add(ci); RESULT = list; :}
-              | config_instruction:ci
-                {: List<ConfigInstruction> list = new ArrayList<>(); list.add(ci); RESULT = list; :}
-              ;
+     config_instruction ::= CONF_DEFAULT ASSIGN expression:e
+                            {: RESULT = new DefaultConfig((int)((NumberLiteral)e).getValue()); :}
+                          | CONF_COLOR_TEXTO_SI ASSIGN color_value:cv PIPE expression:e
+                            {: RESULT = new ColorConfig("COLOR_TEXTO_SI", cv, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_COLOR_SI ASSIGN color_value:cv PIPE expression:e
+                            {: RESULT = new ColorConfig("COLOR_SI", cv, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_FIGURA_SI ASSIGN figure_name:f PIPE expression:e
+                            {: RESULT = new FigureConfig("FIGURA_SI", f, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_LETRA_SI ASSIGN font_name:f PIPE expression:e
+                            {: RESULT = new FontConfig("LETRA_SI", f, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_LETRA_SIZE_SI ASSIGN expression:size PIPE expression:e
+                            {: RESULT = new FontSizeConfig("LETRA_SIZE_SI", size, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_COLOR_TEXTO_MIENTRAS ASSIGN color_value:cv PIPE expression:e
+                            {: RESULT = new ColorConfig("COLOR_TEXTO_MIENTRAS", cv, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_COLOR_MIENTRAS ASSIGN color_value:cv PIPE expression:e
+                            {: RESULT = new ColorConfig("COLOR_MIENTRAS", cv, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_FIGURA_MIENTRAS ASSIGN figure_name:f PIPE expression:e
+                            {: RESULT = new FigureConfig("FIGURA_MIENTRAS", f, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_LETRA_MIENTRAS ASSIGN font_name:f PIPE expression:e
+                            {: RESULT = new FontConfig("LETRA_MIENTRAS", f, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_LETRA_SIZE_MIENTRAS ASSIGN expression:size PIPE expression:e
+                            {: RESULT = new FontSizeConfig("LETRA_SIZE_MIENTRAS", size, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_COLOR_TEXTO_BLOQUE ASSIGN color_value:cv PIPE expression:e
+                            {: RESULT = new ColorConfig("COLOR_TEXTO_BLOQUE", cv, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_COLOR_BLOQUE ASSIGN color_value:cv PIPE expression:e
+                            {: RESULT = new ColorConfig("COLOR_BLOQUE", cv, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_FIGURA_BLOQUE ASSIGN figure_name:f PIPE expression:e
+                            {: RESULT = new FigureConfig("FIGURA_BLOQUE", f, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_LETRA_BLOQUE ASSIGN font_name:f PIPE expression:e
+                            {: RESULT = new FontConfig("LETRA_BLOQUE", f, (int)((NumberLiteral)e).getValue()); :}
+                          | CONF_LETRA_SIZE_BLOQUE ASSIGN expression:size PIPE expression:e
+                            {: RESULT = new FontSizeConfig("LETRA_SIZE_BLOQUE", size, (int)((NumberLiteral)e).getValue()); :}
+                          ;
 
-config_instruction ::= CONF_DEFAULT ASSIGN expression:e
-                       {: RESULT = new DefaultConfig(((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_COLOR_TEXTO_SI ASSIGN color_value:cv PIPE expression:e
-                       {: RESULT = new ColorConfig("COLOR_TEXTO_SI", cv, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_COLOR_SI ASSIGN color_value:cv PIPE expression:e
-                       {: RESULT = new ColorConfig("COLOR_SI", cv, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_FIGURA_SI ASSIGN figure_name:f PIPE expression:e
-                       {: RESULT = new FigureConfig("FIGURA_SI", f, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_LETRA_SI ASSIGN font_name:f PIPE expression:e
-                       {: RESULT = new FontConfig("LETRA_SI", f, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_LETRA_SIZE_SI ASSIGN expression:size PIPE expression:e
-                       {: RESULT = new FontSizeConfig("LETRA_SIZE_SI", size, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_COLOR_TEXTO_MIENTRAS ASSIGN color_value:cv PIPE expression:e
-                       {: RESULT = new ColorConfig("COLOR_TEXTO_MIENTRAS", cv, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_COLOR_MIENTRAS ASSIGN color_value:cv PIPE expression:e
-                       {: RESULT = new ColorConfig("COLOR_MIENTRAS", cv, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_FIGURA_MIENTRAS ASSIGN figure_name:f PIPE expression:e
-                       {: RESULT = new FigureConfig("FIGURA_MIENTRAS", f, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_LETRA_MIENTRAS ASSIGN font_name:f PIPE expression:e
-                       {: RESULT = new FontConfig("LETRA_MIENTRAS", f, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_LETRA_SIZE_MIENTRAS ASSIGN expression:size PIPE expression:e
-                       {: RESULT = new FontSizeConfig("LETRA_SIZE_MIENTRAS", size, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_COLOR_TEXTO_BLOQUE ASSIGN color_value:cv PIPE expression:e
-                       {: RESULT = new ColorConfig("COLOR_TEXTO_BLOQUE", cv, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_COLOR_BLOQUE ASSIGN color_value:cv PIPE expression:e
-                       {: RESULT = new ColorConfig("COLOR_BLOQUE", cv, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_FIGURA_BLOQUE ASSIGN figure_name:f PIPE expression:e
-                       {: RESULT = new FigureConfig("FIGURA_BLOQUE", f, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_LETRA_BLOQUE ASSIGN font_name:f PIPE expression:e
-                       {: RESULT = new FontConfig("LETRA_BLOQUE", f, ((NumberLiteral)e).getValue().intValue()); :}
-                     | CONF_LETRA_SIZE_BLOQUE ASSIGN expression:size PIPE expression:e
-                       {: RESULT = new FontSizeConfig("LETRA_SIZE_BLOQUE", size, ((NumberLiteral)e).getValue().intValue()); :}
-                     ;
+     color_value ::= HEX_COLOR:h
+                     {: RESULT = new HexColor(h); :}
+                   | expression:r COMMA expression:g COMMA expression:b
+                     {: RESULT = new RgbColor((int)((NumberLiteral)r).getValue(), (int)((NumberLiteral)g).getValue(), (int)((NumberLiteral)b).getValue()); :}
+                   ;
 
-color_value ::= HEX_COLOR:h
-                {: RESULT = new HexColor(h); :}
-              | expression:r COMMA expression:g COMMA expression:b
-                {: RESULT = new RgbColor(((NumberLiteral)r).getValue().intValue(), ((NumberLiteral)g).getValue().intValue(), ((NumberLiteral)b).getValue().intValue()); :}
-              ;
+     figure_name ::= FIG_ELIPSE {: RESULT = "ELIPSE"; :}
+                   | FIG_CIRCULO {: RESULT = "CIRCULO"; :}
+                   | FIG_PARALELOGRAMO {: RESULT = "PARALELOGRAMO"; :}
+                   | FIG_RECTANGULO {: RESULT = "RECTANGULO"; :}
+                   | FIG_ROMBO {: RESULT = "ROMBO"; :}
+                   | FIG_RECTANGULO_REDONDEADO {: RESULT = "RECTANGULO_REDONDEADO"; :}
+                   ;
 
-figure_name ::= FIG_ELIPSE {: RESULT = "ELIPSE"; :}
-              | FIG_CIRCULO {: RESULT = "CIRCULO"; :}
-              | FIG_PARALELOGRAMO {: RESULT = "PARALELOGRAMO"; :}
-              | FIG_RECTANGULO {: RESULT = "RECTANGULO"; :}
-              | FIG_ROMBO {: RESULT = "ROMBO"; :}
-              | FIG_RECTANGULO_REDONDEADO {: RESULT = "RECTANGULO_REDONDEADO"; :}
-              ;
-
-font_name ::= FONT_ARIAL {: RESULT = "ARIAL"; :}
-            | FONT_TIMES_NEW_ROMAN {: RESULT = "TIMES_NEW_ROMAN"; :}
-            | FONT_COMIC_SANS {: RESULT = "COMIC_SANS"; :}
-            | FONT_VERDANA {: RESULT = "VERDANA"; :}
-            ;
+     font_name ::= FONT_ARIAL {: RESULT = "ARIAL"; :}
+                 | FONT_TIMES_NEW_ROMAN {: RESULT = "TIMES_NEW_ROMAN"; :}
+                 | FONT_COMIC_SANS {: RESULT = "COMIC_SANS"; :}
+                 | FONT_VERDANA {: RESULT = "VERDANA"; :}
+                 ;
