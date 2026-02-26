@@ -5,13 +5,14 @@ import java.io.StringReader
 
 class Compiler {
     fun compile(input: String): CompilationResult {
+        val lexer = Lexer(StringReader(input))
+        val parser = Parser(lexer)
+        
         return try {
-            val lexer = Lexer(StringReader(input))
-            val parser = parser(lexer)
-            
             val symbol = parser.parse()
             val program = symbol.value as? Program
             
+            // Si el parser tiene errores acumulados pero terminó "bien" (ej. recuperación)
             CompilationResult(
                 program = program,
                 errors = parser.errors,
@@ -19,11 +20,18 @@ class Compiler {
                 controlReport = parser.controlReport
             )
         } catch (e: Exception) {
+            // Si el error fue fatal y detuvo el proceso
+            val allErrors = parser.errors.toMutableList()
+            if (allErrors.isEmpty()) {
+                // Si no hay errores en la lista, el error ocurrió antes de que el parser pudiera registrarlo
+                allErrors.add(CompilationError("N/A", 0, 0, "Error Fatal", e.message ?: "Error desconocido"))
+            }
+            
             CompilationResult(
                 program = null,
-                errors = listOf(CompilationError("N/A", 0, 0, "Error Fatal", e.message ?: "Error desconocido durante la compilación")),
-                operatorReport = emptyList(),
-                controlReport = emptyList()
+                errors = allErrors,
+                operatorReport = parser.operatorReport,
+                controlReport = parser.controlReport
             )
         }
     }

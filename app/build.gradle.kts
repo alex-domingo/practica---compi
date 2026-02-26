@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace = "com.example.decompi"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.example.decompi"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -45,7 +45,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
     
-    // Usamos el JAR local que agregaste en libs/
+    // Usamos el JAR local de java-cup-11b-runtime.jar
     implementation(files("libs/java-cup-11b-runtime.jar"))
 
     testImplementation(libs.junit)
